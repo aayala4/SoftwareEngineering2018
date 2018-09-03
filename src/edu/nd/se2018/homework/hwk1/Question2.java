@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
 /**
  * 
  * Homework 1, Question 2
