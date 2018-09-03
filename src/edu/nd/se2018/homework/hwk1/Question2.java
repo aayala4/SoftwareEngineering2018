@@ -14,14 +14,18 @@ import java.util.Arrays;
  *
  */
 
-public class Question2 {
+public class Question2
+{
 
-	public Question2(){}
+	public Question2()
+	{
+	}
 
 	// Given an input string, return the most frequently occurring word. Exclude very common words (typically
 	// referred to as stop words). Stop words will be defined in a separate string that is also passed as an argument to
 	// the function. If there is no single winner, return null.
-	public String getMostFrequentWord(String input, String stopWords){
+	public String getMostFrequentWord(String input, String stopWords)
+	{
 		
 		// Convert input string to ArrayList
 		ArrayList<String> inputArrayList = new ArrayList<String>(Arrays.asList(input.split(" ")));

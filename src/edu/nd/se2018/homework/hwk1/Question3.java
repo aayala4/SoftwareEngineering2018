@@ -8,12 +8,16 @@ package edu.nd.se2018.homework.hwk1;
  *
  */
 
-public class Question3 {
+public class Question3
+{
 	
-	public Question3(){}	
+	public Question3()
+	{
+	}	
 	
 	// Given a vector of integers (e.g. {1,2,3,4,3,2,6}), some sub-sequences in the vector may be mirrored.
-    public int getMirrorCount(int[] numbers){
+    public int getMirrorCount(int[] numbers)
+    {
     	
     	// Case if vector passed was empty
     	if (numbers.length == 0)

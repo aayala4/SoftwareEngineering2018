@@ -10,13 +10,17 @@ import java.lang.Integer;
  *
  */
 
-public class Question1 {
+public class Question1
+{
 		
-	public Question1(){}
+	public Question1()
+	{
+	}
 	
 	// Given a vector of ints, sum all of their values;
 	// however, if an int is duplicated, only include it in the sum one time. 
-	public int getSumWithoutDuplicates(int[] numbers){
+	public int getSumWithoutDuplicates(int[] numbers)
+	{
 		int sum = 0;
 		
 		// Holds numbers that have already been included in the sum
