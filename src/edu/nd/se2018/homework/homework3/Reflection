@@ -1,0 +1,16 @@
+Alex Ayala
+Homework 03
+
+I decided to use RaceStrategy as an abstract class rather than an interface because there was some functionality I wanted
+all of the subclasses to have, namely the period and its get and set methods. I made RaceStrategy an abstract class instead
+of just a regular parent class whose methods you can override because there was no default race strategy defined. I used
+the subclasses of RaceStrategy for the strategy pattern as the RaceStrategy was the clear interchangeable component of the
+program. All of these subclasses implement the calculateDistanceTraveled() method, which is defined as an abstract method in
+RaceStrategy. This method returns the new distance traveled, which is computed based on how the race strategy is defined. I
+decided to include a Race class which has the control loop for the race. This race loop will check whether any horse has
+crossed the 10 mile mark and will end when one of them does. I put the loop here as every race loop would have specific
+participants. I decided to make a Horse class instead of just leaving all the horse details to the Race to manage because I
+felt like those details as well as certain functionalities like updating the horse's distance run belonged more to each
+specific Horse rather than the Race itself. In the Race class, I just used an ArrayList to manage the horses in this race
+as it's easy to add horses to it. Also, an ArrayList is really easy to iterate over, especially since I'd need to update every
+horse for every loop iteration.
