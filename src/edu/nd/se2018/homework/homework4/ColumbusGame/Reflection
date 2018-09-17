@@ -1,0 +1,21 @@
+Alex Ayala
+Homework 04
+
+Ultimately, my code works, and I'm happy with my design with that regard. However, something
+I did that I wish I could have figured out a simpler way not to was have all of these classes
+depend so much on each other. I feel like this is likely bad design as most of these classes
+don't really stand on their own to provide a full individualized functionality, leading to less
+flexibility. For example, the only reason I have a reference to OceanExplorer in OceanMap at
+all was to pass it on to the PirateShip objects. In hindsight, I probably could have just passed
+it as a function argument. Another example is the PirateShip and OceanExplorer having references
+to each other. I needed PirateShip to have a reference to OceanExplorer to run its redrawPirateShips()
+method after I finished moving the pirates ship, especially since the OceanExplorer can't know
+exactly when a ship finished moving so it shouldn't call redrawPirateShips() on its own. In order
+to replace blue rectangles with ocean images and/or islands with Island images, I would just use
+ImageViews and Images instead of Rectangles. I would probably approach the resetting of the game
+by using the second approach suggested. I would create a method in OceanExplorer that would reset
+all of my class variables and basically do what start() does. In there, I would either just
+make a new OceanMap at that point or create a method in OceanMap that clears the grid, islands, 
+and pirates and recreates/regenerates them. For the button, I would probably have an event handler
+that figures out where I click on the screen, and if I click within the "button region" then
+I would run the proposed reset method in OceanExplorer.
