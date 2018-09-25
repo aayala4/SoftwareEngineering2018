@@ -16,6 +16,13 @@ import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+/**
+ * Starts the train/car simulation
+ * @author jane
+ * Modified by Alex Ayala
+ *
+ */
+
 public class Simulation extends Application{
 	
 	private Pane root;
@@ -40,13 +47,21 @@ public class Simulation extends Application{
 		stage.setScene(scene);
 		stage.show();
 				
-		// Train
+		// Trains
 		RailwayTracks track = mapBuilder.getTrack("Royal");
-		Train train = new Train(track.getEndX()+100,track.getEndY()-25);
+		Train train = new Train(track.getEndX()+100,track.getEndY()-25, "west", "train1");
 		root.getChildren().add(train.getImageView());
 		
-		for(CrossingGate gate: mapBuilder.getAllGates())
+		RailwayTracks track2 = mapBuilder.getTrack("Royal2");
+		Train train2 = new Train(track2.getStartX()-100,track2.getStartY()-25, "east", "train2");
+		root.getChildren().add(train2.getImageView());
+		
+		
+		for(CrossingGate gate: mapBuilder.getAllGates()) {
 			train.addObserver(gate);
+			train2.addObserver(gate);
+		}
+
 				
 		// Sets up a repetitive loop i.e., in handle that runs the actual simulation
 		new AnimationTimer(){
@@ -56,12 +71,16 @@ public class Simulation extends Application{
 			
 				createCar();
 				train.move();
+				train2.move();
 				
 				for(CrossingGate gate: mapBuilder.getAllGates())
 					gate.operateGate();
 				
 				if (train.offScreen())
 					train.reset();
+				
+				if (train2.offScreen())
+					train2.reset();
 						
 				clearCars();				
 			}
@@ -79,6 +98,7 @@ public class Simulation extends Application{
 		}
 	}
 	
+	// Occasionally create cars for the roads
 	private void createCar(){
 		Collection<Road> roads = mapBuilder.getRoads();
 		for(Road road: roads){

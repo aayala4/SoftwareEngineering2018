@@ -1,0 +1,38 @@
+Alex Ayala
+aayala4
+Homework 5
+
+The modified code is within the edu.nd.sarec.railwaycrossing package.
+
+1) I tried to approach the design process incrementally. First, I made sure that the double trains
+worked without worrying about the cars. Once I had that working, I tried to get the cars to just
+turn onto the first road. Only after that worked did I try to make the cars turn onto the second
+road. Finally, after that I tried to make the cars' observers updated correctly. Something I de-
+cided to do in order to inform the Cars' and by association the CarFactory's directions, was I
+passed the Road and the Road you can turn onto to the CarFactory. I also use the current Road
+to set some variables in the Car. I was trying my best to avoid coupling, so I made it so those
+Roads could be passed in as null to justify my decision since they wouldn't require those roads.
+Thus, I believe that Car and CarFactory would still work okay independently of those roads. In
+general, the existing code seemed to be relatively hard coded to work with what was given. A lot
+of my changes were to try generalizing some of the details (like I tried adding functionality to
+North and Eastbound roads even though we never use them). One thing I wish I had more time to
+figure out was how to properly manage right of way and cars being halted mid turn. Currently, it's
+set up that if a car is stopped because of the cars on the road it's turning onto, even if it's
+still partly on the road it's turning from, the cars on the road it's turning from won't wait for
+it. Also, when I have cars turn from the middle road to the left road, I didn't figure out a clean
+way for the cars to wait for a decent amount of space to turn onto the road. This results in cars
+sometimes overlapping when they merge onto the left road. This also sometimes causes there to be
+a buildup below the track and has the train sometimes hit cars. This could be fixed by the train
+observing the cars but in real life the train probably couldn't stop for a car. Also, I've been
+having issues recreating it, but there is a bug that rarely happens where a car on the right stops
+moving, causing a traffic jam. I would like to be able to fix this, but I can't do much testing on
+it if it almost never happens.
+
+2) I doubt my design would scale well. In particular, my design is limited to the fact that
+roads only have one possible road that can be turned onto from that road. Thus, you can't easily
+simulate real life traffic by adding additional road turns. Also, the trains and tracks are added
+manually, so it would be difficult and tedious to add several trains. My design already has some
+issues with this, but if you add significantly more cars at a time, traffic jams become more
+likely especially at intersections, so cars could get hit by the trains more often. Part of why
+this part doesn't scale well is that the design has no real concept of right of way or other
+real world needs like stop signs/lights to manage who gets to go when.

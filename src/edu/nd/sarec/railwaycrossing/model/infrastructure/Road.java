@@ -6,10 +6,12 @@ import java.util.Vector;
 
 import edu.nd.sarec.railwaycrossing.model.infrastructure.gate.CrossingGate;
 import edu.nd.sarec.railwaycrossing.model.vehicles.CarFactory;
+import edu.nd.sarec.railwaycrossing.model.vehicles.Car;
 
 /**
  * Represents a single road
  * @author jane
+ * Modified by Alex Ayala
  *
  */
 public class Road {
@@ -22,10 +24,17 @@ public class Road {
 	Collection<CrossingGate> gates;
 	boolean clearEnds = false;
 	int roadSize;
+	boolean allowTurns;
+	
+	// Represents whether the CarFactory for this road can generate cars
+	boolean canBuild = false;
+	
+	// Represents the road that can be turned onto from this road
+	Road turnRoad = null;
 	
 	public Road(){}
 	
-	public Road(Point start, Point end, Direction direction, boolean buildCarFactory, boolean clearEnds){
+	public Road(Point start, Point end, Direction direction, boolean buildCarFactory, boolean clearEnds, boolean allowTurns, Road turnRoad, boolean canBuild){
 		startX = start.x;
 		startY = start.y;
 		endX = end.x;
@@ -35,6 +44,9 @@ public class Road {
 		this.direction = direction;
 		gates = new Vector<CrossingGate>();
 		this.clearEnds = clearEnds;
+		this.allowTurns = allowTurns;
+		this.turnRoad = turnRoad;
+		this.canBuild = canBuild;
 		
 	}
 	
@@ -44,12 +56,12 @@ public class Road {
 	public void assignGate(CrossingGate gate){
 		gates.add(gate);
 		if (carFactory != null)
-			carFactory = new CarFactory(direction, new Point(startX-roadSize/2,startY), gates);  // allows additional gates.  Needs fixing
+			carFactory = new CarFactory(direction, new Point(startX-roadSize/2,startY), gates, turnRoad, this, canBuild);  // allows additional gates.  Needs fixing
 	}
 	
 	public void addCarFactory(){
 		if (carFactory == null) // We only allow one
-			carFactory = new CarFactory(direction, new Point(startX-roadSize/2,startY), gates);
+			carFactory = new CarFactory(direction, new Point(startX-roadSize/2,startY), gates, turnRoad, this, canBuild);
 	}
 	
 	public CarFactory getCarFactory(){
@@ -82,5 +94,9 @@ public class Road {
 	
 	public int getRoadWidth(){
 		return roadSize;
+	}
+	
+	public void takeNewCar(Car c) {
+		
 	}
 }

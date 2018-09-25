@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 /**
  * Represents the train entity object
  * @author jane
+ * Modified by Alex Ayala
  *
  */
 public class Train extends Observable implements IVehicle{
@@ -18,15 +19,25 @@ public class Train extends Observable implements IVehicle{
 	private Image img;
 	private ImageView imgView;
 	private int trainLength = 35;
+	private String direction = "";
+	private String name = "";
 	
-	public Train(int x, int y){
+	public Train(int x, int y, String dir, String name){
 		this.currentX = x;
 		this.currentY = y;
 		originalX = x;
-		img = new Image("images\\Train.PNG",120,trainLength,false,false);
+		img = new Image("images/Train.PNG",120,trainLength,false,false);
 		imgView = new ImageView(img);
 		imgView.setX(currentX);
 		imgView.setY(currentY);
+		
+		// Flip the image to face east if the direction is east
+		if(dir == "east") {
+			imgView.setScaleX(-1);
+		}
+		
+		this.direction = dir;
+		this.name = name;
 	}
 	
 	public double getVehicleX(){
@@ -37,18 +48,35 @@ public class Train extends Observable implements IVehicle{
 		return currentY;
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
+	// Train moves west if its direction is "west." East otherwise.
 	public void move(){
-		currentX-=2;
+		if (direction == "west") {
+			currentX-=2;
+		} else {
+			currentX+=2;
+		}
 		imgView.setX(currentX);
 		setChanged();
 		notifyObservers();
 	}
 	
+	// Checks if the train is off screen
 	public boolean offScreen(){
-		if (currentX < -200)
-			return true;
-		else
-			return false;				
+		if (direction == "west") {
+			if (currentX < -200)
+				return true;
+			else
+				return false;				
+		} else {
+			if (currentX > 1400)
+				return true;
+			else
+				return false;
+		}	
 	}
 	
 	public void reset(){

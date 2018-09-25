@@ -2,6 +2,7 @@ package edu.nd.sarec.railwaycrossing.model.infrastructure.gate;
 
 import java.util.Observable;
 import java.util.Observer;
+import java.util.HashSet;
 
 import edu.nd.sarec.railwaycrossing.model.vehicles.Train;
 import javafx.scene.layout.Pane;
@@ -11,17 +12,18 @@ import javafx.scene.shape.Line;
 /**
  * Context class for Crossing Gate
  * @author jane
+ * Modified by Alex Ayala
  *
  */
 public class CrossingGate extends Observable implements Observer{
 	
-	// Crossing Gate location and its trigger & exit points
+	// Crossing Gate location and its left & right X bounds
 	private int anchorX;
 	private int anchorY;
 	private int movingX;
 	private int movingY;
-	private int triggerPoint;
-	private int exitPoint;
+	private int rightPoint;
+	private int leftPoint;
 
 	private IGateState gateClosed;
 	private IGateState gateOpen;
@@ -30,6 +32,7 @@ public class CrossingGate extends Observable implements Observer{
 	private IGateState currentGateState;
 	private Line line; 
 	private Pane root;
+	private HashSet<String> observedTrains = new HashSet<String>();
 	
 	String gateName;
 	
@@ -40,8 +43,8 @@ public class CrossingGate extends Observable implements Observer{
 		anchorY = yPosition;
 		movingX = anchorX;
 		movingY = anchorY-60;
-		triggerPoint = anchorX+250;
-		exitPoint = anchorX-250;
+		rightPoint = anchorX+250;
+		leftPoint = anchorX-250;
 		
 		// Gate elements
 		line = new Line(anchorX, anchorY,movingX,movingY);
@@ -74,7 +77,7 @@ public class CrossingGate extends Observable implements Observer{
 			line.setEndX(movingX);
 			line.setEndY(movingY);
 		} else {
-			currentGateState.gateFinishedOpening();
+			currentGateState.gateFinishedClosing();
 		}
 	}
 	
@@ -119,11 +122,29 @@ public class CrossingGate extends Observable implements Observer{
 	public void update(Observable o, Object arg) {
 		if (o instanceof Train){
 			Train train = (Train)o;
-			if (train.getVehicleX() < exitPoint)
-				currentGateState.leaveStation();
-			else if(train.getVehicleX() < triggerPoint){
-				currentGateState.approachStation();
-			} 
+			
+			// Try adding the train to the set of observed trains
+			if(observedTrains.add(train.getName())) {
+				// If the train wasn't already in the list, check if it's within the bounds
+				// for the gate. If so, change the gate state to have the gate opening. Other-
+				// wise, remove the added train from the observed trains set
+				if(train.getVehicleX() < rightPoint && train.getVehicleX() > leftPoint){
+					currentGateState.approachStation();
+				} else {
+					observedTrains.remove(train.getName());
+				}
+			} else {
+				// If the train was already in the set, check if it is no longer within the
+				// bounds of the gate. If so, remove it from the set of observed trains and
+				// check if the set is empty. If it is, change the gate state to have the
+				// gate closing.
+				if (train.getVehicleX() < leftPoint || train.getVehicleX() > rightPoint) {
+					observedTrains.remove(train.getName());
+					if(observedTrains.isEmpty()) {
+						currentGateState.leaveStation();
+					}
+				}
+			}
 		}	
 	}
 }
