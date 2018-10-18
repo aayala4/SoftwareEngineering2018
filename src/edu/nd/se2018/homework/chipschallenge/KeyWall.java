@@ -5,13 +5,18 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.util.ArrayList;
 
-public class KeyWall
+/**
+ * 
+ * @author Alex Ayala
+ * KeyWall class. This represents a KeyWall tile. These block Chip unless he has a key of the correct color
+ *
+ */
+
+public class KeyWall extends Unlockable
 {
 	private String color;
-	private ImageView keyWallView;
-	private Point location;
-	private boolean opened;
 	
+	// Constructor. Determine image based on color
 	KeyWall(String color, int x, int y, int scale)
 	{
 		this.color = color;
@@ -32,55 +37,48 @@ public class KeyWall
 		{
 			img = new Image("images/chip/textures/yellowKeyWall.png", scale, scale, true, true);
 		}
-		keyWallView = new ImageView(img);
-		keyWallView.setX(x*scale);
-		keyWallView.setY(y*scale);
+		imageView = new ImageView(img);
+		imageView.setX(x*scale);
+		imageView.setY(y*scale);
 		location = new Point(x, y);
 		opened = false;
 	}
 	
-	public ImageView getImageView()
-	{
-		return keyWallView;
-	}
-	
+	// Return color of KeyWall
 	public String getColor()
 	{
 		return color;
 	}
 	
-	public Point getLocation()
-	{
-		return location;
-	}
-	
-	public boolean containsMatchingKey(ArrayList<Key> keys)
+	// Check if the collectibles list has a key of the matching color. Returns true and removes the key if so. False otherwise.
+	public boolean containsMatchingKey(ArrayList<Collectible> collectibles)
 	{
 		boolean removed = false;
 		Key key = null;
-		for(Key k : keys)
+		for(Collectible c : collectibles)
 		{
-			if(k.getColor().equals(color))
+			if(c instanceof Key)
 			{
-				key = k;
-				removed = true;
-				break;
+				Key k = (Key) c;
+				if(k.getColor().equals(color))
+				{
+					key = k;
+					removed = true;
+					break;
+				}
 			}
 		}
 		if(removed)
 		{
-			keys.remove(key);
+			collectibles.remove(key);
+			System.out.println("Removed a " + color + " key");
 		}
 		return removed;
 	}
 	
-	public void setOpened(boolean op)
+	// Return whether or not unlocking was successful (if the list passed had a matching key)
+	public boolean tryUnlocking(ArrayList<Collectible> collectibles)
 	{
-		opened = op;
-	}
-	
-	public boolean getOpened()
-	{
-		return opened;
+		return containsMatchingKey(collectibles);
 	}
 }

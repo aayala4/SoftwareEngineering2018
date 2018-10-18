@@ -1,6 +1,7 @@
 package edu.nd.se2018.homework.chipschallenge;
 
 import javafx.collections.ObservableList;
+import java.io.*;
 import javafx.scene.Node;
 
 import javafx.scene.image.Image;
@@ -11,100 +12,318 @@ import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * 
+ * @author Alex Ayala
+ * Singleton ChipsChallengeMap class. Manages loading the map and observes a Chip object to manage key/chip collection and
+ * door unlocking
+ *
+ */
+
 public class ChipsChallengeMap implements Observer
 {
-	private int[][] grid;
+	private String[][] grid;
 	private int dimensions;
 	private int scale;
-	private ArrayList<Key> keys;
-	private ArrayList<KeyWall> keyWalls;
+	private ArrayList<Collectible> collectibles;
+	private ArrayList<Unlockable> unlockables;
+	private String levelFile;
+    private static ChipsChallengeMap singleInstance = null;
+    private ObservableList<Node> root = null;
 	
-	ChipsChallengeMap(int dimensions, int scale)
+    // Constructor 
+	private ChipsChallengeMap(int dimensions, int scale, ObservableList<Node> root)
 	{
+		levelFile = "level 1";
 		this.dimensions = dimensions;
-		grid = new int[dimensions][dimensions];
+		grid = new String[dimensions][dimensions];
 		this.scale = scale;
 		for(int i = 0; i < dimensions; i++)
 		{
 			for(int j = 0; j < dimensions; j++)
 			{
-				grid[i][j] = 0;
+				grid[i][j] = "0";
 			}
 		}
-		keys = new ArrayList<Key>();
-		keyWalls = new ArrayList<KeyWall>();
+		collectibles = new ArrayList<Collectible>();
+		unlockables = new ArrayList<Unlockable>();
+		this.root = root;
 	}
 	
-	public void generateLevelOne(ObservableList<Node> root, Chip chip)
+	// Gets the existing instance if there is one. Otherwise, return a new one
+	// with the given dimensions, scale, and root
+	public static ChipsChallengeMap getInstance(int dimensions, int scale, ObservableList<Node> root)
 	{
-		grid[5][5] = 1;
-		grid[8][8] = 1;
-		grid[20][20] = 2;
-		grid[15][15] = 2;
-		grid[10][20] = 2;
-		Key k = new Key("red", 5, 5, scale);
-		root.add(k.getImageView());
-		keys.add(k);
-		k = new Key("blue", 8, 8, scale);
-		root.add(k.getImageView());
-		keys.add(k);
-		KeyWall kw = new KeyWall("red", 20, 20, scale);
-		root.add(kw.getImageView());
-		keyWalls.add(kw);
-		kw = new KeyWall("red", 15, 15, scale);
-		root.add(kw.getImageView());
-		keyWalls.add(kw);
-		kw = new KeyWall("blue", 10, 20, scale);
-		root.add(kw.getImageView());
-		keyWalls.add(kw);
+		if(singleInstance == null)
+		{
+			singleInstance = new ChipsChallengeMap(dimensions, scale, root);
+		}
+		return singleInstance;
+	}
+
+	// Gets the existing instance if there is one. Otherwise, return a new one
+	// with the given 25, 25, and null as the dimensions, scale, and root
+	public static ChipsChallengeMap getInstance()
+	{
+		if(singleInstance == null)
+		{
+			singleInstance = new ChipsChallengeMap(25, 25, null);
+		}
+		return singleInstance;
 	}
 	
-	public void drawMap(ObservableList<Node> root)
-	{		
-		// Draw the appropriate ocean and island tiles. Also mark off the grid
-		// for pirate ship, island, and ocean tiles
-		for(int x = 0; x < dimensions; x++)
+	/*
+	 * Initialize the map based on text from map file
+	 * 
+	 * 0: Walkable Tile
+	 * r: Red Key
+	 * b: Blue Key
+	 * g: Green Key
+	 * y: Yellow Key
+	 * R: Red KeyWall
+	 * B: Blue KeyWall
+	 * G: Green KeyWall
+	 * Y: Yellow KeyWall
+	 * E: Exit Portal
+	 * C: Chip
+	 * c: Collectable Chip
+	 * W: Wall
+	 * w: Chip Wall
+	 */
+	public void loadLevel(Chip chip) throws IOException
+	{
+		root.clear();
+		collectibles.clear();
+		unlockables.clear();
+		this.readLevel();
+		for(int i = 0; i < dimensions; i++)
 		{
-			for(int y = 0; y < dimensions; y++)
+			for(int j = 0; j < dimensions; j++)
 			{
+				// Images for tiles without a related class
 				Image tile = new Image("images/chip/textures/BlankTile.png", scale, scale, true, true);
-				ImageView tileView = new ImageView(tile);
-				tileView.setX(x*scale);
-				tileView.setY(y*scale);
-				root.add(tileView);
+				ImageView tileView;
+				Image wall = new Image("images/chip/textures/wall.png", scale, scale, true, true);
+				ImageView wallView;
+				Image portal = new Image("images/chip/textures/portal.png", scale, scale, true, true);
+				ImageView portalView;
+				Collectible c;
+				Unlockable u;
+				
+				// Create objects for unlockables and collectibles
+				// and move Chip to new starting spot
+				switch(grid[i][j])
+				{
+					case "r":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						c = new Key("red", j, i, scale);
+						root.add(c.getImageView());
+						collectibles.add(c);
+						break;
+					case "y":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						c = new Key("yellow", j, i, scale);
+						root.add(c.getImageView());
+						collectibles.add(c);
+						break;
+					case "g":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						c = new Key("green", j, i, scale);
+						root.add(c.getImageView());
+						collectibles.add(c);
+						break;		
+					case "b":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						c = new Key("blue", j, i, scale);
+						root.add(c.getImageView());
+						collectibles.add(c);
+						break;
+					case "R":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						u = new KeyWall("red", j, i, scale);
+						root.add(u.getImageView());
+						unlockables.add(u);
+						break;
+					case "Y":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						u = new KeyWall("yellow", j, i, scale);
+						root.add(u.getImageView());
+						unlockables.add(u);
+						break;
+					case "G":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						u = new KeyWall("green", j, i, scale);
+						root.add(u.getImageView());
+						unlockables.add(u);
+						break;
+					case "B":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						u = new KeyWall("blue", j, i, scale);
+						root.add(u.getImageView());
+						unlockables.add(u);
+						break;
+					case "C":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);
+						root.remove(chip.getCurrentImageView());
+						chip.emptyPockets();
+						chip.setLocation(j, i);
+						root.add(chip.getCurrentImageView());
+						grid[i][j] = "0";
+						break;
+					case "c":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						c = new CollectibleChip(j, i, scale);
+						root.add(c.getImageView());
+						collectibles.add(c);
+						break;
+					case "E":
+						portalView = new ImageView(portal);
+						portalView.setX(j*scale);
+						portalView.setY(i*scale);
+						root.add(portalView);	
+						break;
+					case "W":
+						wallView = new ImageView(wall);
+						wallView.setX(j*scale);
+						wallView.setY(i*scale);
+						root.add(wallView);		
+						break;
+					case "w":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						u = new CollectibleChipBlocker(j, i, scale);
+						root.add(u.getImageView());
+						unlockables.add(u);
+						break;
+					case "0":
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);		
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		giveChipCountToChipBlockers();
+	}
+
+	// Check how many collectible chips are on the map total and let the chip blockers know
+	public void giveChipCountToChipBlockers()
+	{
+		int chips = 0;
+		for(Collectible c: collectibles)
+		{
+			if(c instanceof CollectibleChip)
+			{
+				chips++;
+			}
+		}
+		for(Unlockable u: unlockables)
+		{
+			if(u instanceof CollectibleChipBlocker)
+			{
+				((CollectibleChipBlocker) u).setChipsNeeded(chips);
 			}
 		}
 	}
 	
-	public int[][] getGrid()
+	// Read text from map file into grid
+	public void readLevel() throws IOException
+	{
+		File file;
+		if (levelFile.equals("level 1"))
+		{
+			file = new File("src/edu/nd/se2018/homework/chipschallenge/level1.txt");
+			levelFile = "level 2";
+			System.out.println("Playing Level 1");
+		}
+		else
+		{
+			file = new File("src/edu/nd/se2018/homework/chipschallenge/level2.txt");
+			levelFile = "level 1";
+			System.out.println("Playing Level 2");
+		}
+		FileInputStream fi = new FileInputStream(file);
+		BufferedReader br = new BufferedReader(new InputStreamReader(fi));
+		 
+		String line = null;
+		int i = 0;
+		while ((line = br.readLine()) != null)
+		{
+			grid[i] = line.trim().split(" ");
+			i++;
+		}
+	 
+		br.close();
+	}
+	
+	// Return the grid
+	public String[][] getGrid()
 	{
 		return grid;
 	}
 	
-	public KeyWall findKeyWallAtLocation(Point p)
+	// Find an unlockable one unit away from point p if there is one
+	public Unlockable findUnlockableAtLocation(Point p)
 	{
-		for(KeyWall kw : keyWalls)
+		for(Unlockable u : unlockables)
 		{
-			if ((int)p.distance(kw.getLocation()) == 1)
+			if ((int)p.distance(u.getLocation()) == 1)
 			{
-				return kw;
+				return u;
 			}
 		}
 		return null;
 	}
 	
-	public Key findKeyAtLocation(Point p)
+	// Find a collectible at point p if there is one
+	public Collectible findCollectibleAtLocation(Point p)
 	{
-		for(Key kw : keys)
+		for(Collectible c : collectibles)
 		{
-			if (kw.getLocation().equals(p))
+			if (c.getLocation().equals(p))
 			{
-				return kw;
+				return c;
 			}
 		}
 		return null;
 	}
 
+	// Called when Chip moves. This manages chip/key collection, door unlocking, and reseting the level
 	@Override
 	public void update(Observable o, Object arg)
 	{
@@ -113,30 +332,57 @@ public class ChipsChallengeMap implements Observer
 			Chip c = (Chip)o;
 			int x = (int)c.getLocation().getX();
 			int y = (int)c.getLocation().getY();
-			if(c.getBlockingWallType() == 2)
+			
+			// The case where Chip was blocked by an unlockable
+			// Removes the unlockable from the map
+			if(c.getBlockingWallType().equals("U"))
 			{
-				KeyWall kw = findKeyWallAtLocation(c.getLocation());
-				if(kw != null)
+				Unlockable u = findUnlockableAtLocation(c.getLocation());
+				if(u != null)
 				{
-					if(kw.containsMatchingKey(c.getKeys()))
+					ArrayList<Collectible> chipsCollectibles = null;
+ 					if(u instanceof KeyWall)
 					{
-						keyWalls.remove(kw);
-						kw.setOpened(true);
-						kw.getImageView().setVisible(false);
-						grid[(int)kw.getLocation().getX()][(int)kw.getLocation().getY()] = 0;
+						chipsCollectibles = c.getKeys();
+					}
+					else
+					{
+						chipsCollectibles = c.getChips();
+					}
+					if(u.tryUnlocking(chipsCollectibles))
+					{
+						unlockables.remove(u);
+						u.setOpened(true);
+						u.getImageView().setVisible(false);
+						grid[(int)u.getLocation().getY()][(int)u.getLocation().getX()] = "0";
 					}
 				}
 			}
-			else if(grid[x][y] == 1)
+			// Case where Chip is standing on a collectible.
+			// Removes the collectible from the map and adds it to Chip's collection
+			else if(grid[y][x].equals("r") || grid[y][x].equals("y") || grid[y][x].equals("g") || grid[y][x].equals("b") || 
+					grid[y][x].equals("c"))
 			{
-				Key k = findKeyAtLocation(c.getLocation());
-				if(k != null)
+				Collectible collect = findCollectibleAtLocation(c.getLocation());
+				if(collect != null)
 				{
-					c.acquireKey(k);
-					keys.remove(k);
-					k.setAcquired(true);
-					k.getImageView().setVisible(false);
-					grid[x][y] = 0;
+					c.pickUp(collect);
+					collectibles.remove(collect);
+					collect.setAcquired(true);
+					collect.getImageView().setVisible(false);
+					grid[y][x] = "0";
+				}
+			}
+			// Case where Chip is standing on the portal. Loads the next level.
+			else if(grid[y][x].equals("E"))
+			{
+				try
+				{
+					loadLevel(c);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
 				}
 			}
 		}			
