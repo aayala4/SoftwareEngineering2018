@@ -234,6 +234,11 @@ public class ChipsChallengeMap implements Observer
 						root.add(tileView);		
 						break;
 					default:
+						tileView = new ImageView(tile);
+						tileView.setX(j*scale);
+						tileView.setY(i*scale);
+						root.add(tileView);	
+						grid[i][j] = "0";
 						break;
 				}
 			}
@@ -340,20 +345,10 @@ public class ChipsChallengeMap implements Observer
 				Unlockable u = findUnlockableAtLocation(c.getLocation());
 				if(u != null)
 				{
-					ArrayList<Collectible> chipsCollectibles = null;
- 					if(u instanceof KeyWall)
-					{
-						chipsCollectibles = c.getKeys();
-					}
-					else
-					{
-						chipsCollectibles = c.getChips();
-					}
-					if(u.tryUnlocking(chipsCollectibles))
+
+					if(c.tryUnlocking(u))
 					{
 						unlockables.remove(u);
-						u.setOpened(true);
-						u.getImageView().setVisible(false);
 						grid[(int)u.getLocation().getY()][(int)u.getLocation().getX()] = "0";
 					}
 				}
@@ -368,8 +363,6 @@ public class ChipsChallengeMap implements Observer
 				{
 					c.pickUp(collect);
 					collectibles.remove(collect);
-					collect.setAcquired(true);
-					collect.getImageView().setVisible(false);
 					grid[y][x] = "0";
 				}
 			}

@@ -42,7 +42,7 @@ public class CollectibleChipBlocker extends Unlockable
 		int total = chipsNeeded;
 		for(Collectible c: cs)
 		{
-			if(c instanceof Collectible)
+			if(c instanceof CollectibleChip)
 			{
 				total -= 1;
 			}

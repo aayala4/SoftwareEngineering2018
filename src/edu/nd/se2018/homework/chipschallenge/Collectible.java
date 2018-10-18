@@ -27,10 +27,6 @@ public abstract class Collectible
 	public void setAcquired(boolean acq)
 	{
 		acquired = acq;
-		if(acquired)
-		{
-			showCollectedMessage();
-		}
 	}
 	
 	// Return whether collectible is acquired

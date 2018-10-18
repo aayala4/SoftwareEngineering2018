@@ -23,13 +23,12 @@ public class Chip extends Observable
 	private ImageView currentImageView;
 	private Point location;
 	private int scale;
-	
+
 	// This represents what blocked Chip. U for unlockable, W for regular wall, 0 for none
 	private String blockingWallType = "0";
-	
-	private ArrayList<Collectible> keys;
-	private ArrayList<Collectible> chips;
-	
+
+	private ArrayList<Collectible> collectibles;
+
 	// Constructor
 	Chip(int scale)
 	{
@@ -48,17 +47,30 @@ public class Chip extends Observable
 		location = new Point(0,0);
 		currentImageView.setX(0);
 		currentImageView.setY(0);
-		keys = new ArrayList<Collectible>();
-		chips = new ArrayList<Collectible>();
+		collectibles = new ArrayList<Collectible>();
 	}
-	
-	// Clear the keys and chips lists
+
+	// Try unlocking the unlockable
+	public boolean tryUnlocking(Unlockable u)
+	{
+		if(u != null)
+		{
+			if (u.tryUnlocking(collectibles))
+			{
+				u.setOpened(true);
+				u.getImageView().setVisible(false);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Clear the collectibles lists
 	public void emptyPockets()
 	{
-		keys.clear();
-		chips.clear();
+		collectibles.clear();
 	}
-	
+
 	// Set a location and update the image view accordingly
 	public void setLocation(int x, int y)
 	{
@@ -66,183 +78,189 @@ public class Chip extends Observable
 		currentImageView.setX(x*scale);
 		currentImageView.setY(y*scale);
 	}
-	
+
 	// Pick up either a key or chip
 	public void pickUp(Collectible c)
 	{
-		if(c instanceof Key)
+		if(c != null)
 		{
-			keys.add(c);
-		}
-		else if (c instanceof CollectibleChip)
-		{
-			chips.add(c);
+			collectibles.add(c);
+			c.setAcquired(true);
+			c.getImageView().setVisible(false);
+			c.showCollectedMessage();
 		}
 	}
-	
+
 	// Return the current location
 	public Point getLocation()
 	{
 		return location;
 	}
-	
+
 	// Return the current image view
 	public ImageView getCurrentImageView()
 	{
 		return currentImageView;
 	}
-	
+
 	// Return the blocking wall type
 	public String getBlockingWallType()
 	{
 		return blockingWallType;
 	}
-	
+
 	// Move to the right. If something blocks, set blockingWallType accordingly. Notify observers of movement
 	public void goRight(int dimensions, String[][] grid, ObservableList<Node> root)
 	{
-		double x = location.getX();
-		double y = location.getY();
-		root.remove(currentImageView);
-		currentImageView = chipImageViews[2];
-		currentImageView.setX(x*scale);
-		currentImageView.setY(y*scale);
-		x += 1;
-		blockingWallType = "0";
-		if(x < dimensions)
+		if(root != null)
 		{
-			if(grid[(int)y][(int)x].equals("W"))
+			double x = location.getX();
+			double y = location.getY();
+			root.remove(currentImageView);
+			currentImageView = chipImageViews[2];
+			currentImageView.setX(x*scale);
+			currentImageView.setY(y*scale);
+			x += 1;
+			blockingWallType = "0";
+			if(x < dimensions)
 			{
-				blockingWallType = "W";
+				if(grid[(int)y][(int)x].equals("W"))
+				{
+					blockingWallType = "W";
+				}
+				else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
+						grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
+				{
+					blockingWallType = "U";
+				}
+				else
+				{
+					location.setLocation(x, y);
+					currentImageView.setX(x*scale);
+					currentImageView.setY(y*scale);
+				}
 			}
-			else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
-					grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
-			{
-				blockingWallType = "U";
-			}
-			else
-			{
-				location.setLocation(x, y);
-				currentImageView.setX(x*scale);
-				currentImageView.setY(y*scale);
-			}
+			root.add(currentImageView);
+			setChanged();
+			notifyObservers();
 		}
-		root.add(currentImageView);
-		setChanged();
-		notifyObservers();
 	}
-	
+
 	// Move to the left. If something blocks, set blockingWallType accordingly. Notify observers of movement
 	public void goLeft(int dimensions, String[][] grid, ObservableList<Node> root)
 	{
-		double x = location.getX();
-		double y = location.getY();
-		root.remove(currentImageView);
-		currentImageView = chipImageViews[3];
-		currentImageView.setX(x*scale);
-		currentImageView.setY(y*scale);
-		x -= 1;
-		blockingWallType = "0";
-		if(x >= 0)
+		if(root != null)
 		{
-			if(grid[(int)y][(int)x].equals("W"))
+			double x = location.getX();
+			double y = location.getY();
+			root.remove(currentImageView);
+			currentImageView = chipImageViews[3];
+			currentImageView.setX(x*scale);
+			currentImageView.setY(y*scale);
+			x -= 1;
+			blockingWallType = "0";
+			if(x >= 0)
 			{
-				blockingWallType = "W";
+				if(grid[(int)y][(int)x].equals("W"))
+				{
+					blockingWallType = "W";
+				}
+				else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
+						grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
+				{
+					blockingWallType = "U";
+				}
+				else
+				{
+					location.setLocation(x, y);
+					currentImageView.setX(x*scale);
+					currentImageView.setY(y*scale);
+				}
 			}
-			else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
-					grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
-			{
-				blockingWallType = "U";
-			}
-			else
-			{
-				location.setLocation(x, y);
-				currentImageView.setX(x*scale);
-				currentImageView.setY(y*scale);
-			}
+			root.add(currentImageView);
+			setChanged();
+			notifyObservers();
 		}
-		root.add(currentImageView);
-		setChanged();
-		notifyObservers();
 	}
-	
+
 	// Move up. If something blocks, set blockingWallType accordingly. Notify observers of movement
 	public void goUp(int dimensions, String[][] grid, ObservableList<Node> root)
 	{
-		double x = location.getX();
-		double y = location.getY();
-		root.remove(currentImageView);
-		currentImageView = chipImageViews[0];
-		currentImageView.setX(x*scale);
-		currentImageView.setY(y*scale);
-		y -= 1;
-		blockingWallType = "0";
-		if(y >= 0)
+		if(root != null)
 		{
-			if(grid[(int)y][(int)x].equals("W"))
+			double x = location.getX();
+			double y = location.getY();
+			root.remove(currentImageView);
+			currentImageView = chipImageViews[0];
+			currentImageView.setX(x*scale);
+			currentImageView.setY(y*scale);
+			y -= 1;
+			blockingWallType = "0";
+			if(y >= 0)
 			{
-				blockingWallType = "W";
+				if(grid[(int)y][(int)x].equals("W"))
+				{
+					blockingWallType = "W";
+				}
+				else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
+						grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
+				{
+					blockingWallType = "U";
+				}
+				else
+				{
+					location.setLocation(x, y);
+					currentImageView.setX(x*scale);
+					currentImageView.setY(y*scale);
+				}
 			}
-			else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
-					grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
-			{
-				blockingWallType = "U";
-			}
-			else
-			{
-				location.setLocation(x, y);
-				currentImageView.setX(x*scale);
-				currentImageView.setY(y*scale);
-			}
+			root.add(currentImageView);
+			setChanged();
+			notifyObservers();
 		}
-		root.add(currentImageView);
-		setChanged();
-		notifyObservers();
 	}
-	
+
 	// Move down. If something blocks, set blockingWallType accordingly. Notify observers of movement
 	public void goDown(int dimensions, String[][] grid, ObservableList<Node> root)
 	{
-		double x = location.getX();
-		double y = location.getY();
-		root.remove(currentImageView);
-		currentImageView = chipImageViews[1];
-		currentImageView.setX(x*scale);
-		currentImageView.setY(y*scale);
-		y += 1;
-		blockingWallType = "0";
-		if(y < dimensions)
+		if(root != null)
 		{
-			if(grid[(int)y][(int)x].equals("W"))
+			double x = location.getX();
+			double y = location.getY();
+			root.remove(currentImageView);
+			currentImageView = chipImageViews[1];
+			currentImageView.setX(x*scale);
+			currentImageView.setY(y*scale);
+			y += 1;
+			blockingWallType = "0";
+			if(y < dimensions)
 			{
-				blockingWallType = "W";
+				if(grid[(int)y][(int)x].equals("W"))
+				{
+					blockingWallType = "W";
+				}
+				else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
+						grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
+				{
+					blockingWallType = "U";
+				}
+				else
+				{
+					location.setLocation(x, y);
+					currentImageView.setX(x*scale);
+					currentImageView.setY(y*scale);
+				}
 			}
-			else if(grid[(int)y][(int)x].equals("R") || grid[(int)y][(int)x].equals("B") || grid[(int)y][(int)x].equals("G") ||
-					grid[(int)y][(int)x].equals("Y") || grid[(int)y][(int)x].equals("w"))
-			{
-				blockingWallType = "U";
-			}
-			else
-			{
-				location.setLocation(x, y);
-				currentImageView.setX(x*scale);
-				currentImageView.setY(y*scale);
-			}
+			root.add(currentImageView);
+			setChanged();
+			notifyObservers();
 		}
-		root.add(currentImageView);
-		setChanged();
-		notifyObservers();
 	}
-	
-	// Return the keys list
-	public ArrayList<Collectible> getKeys()
+
+	// Return the collectibles list
+	public ArrayList<Collectible> getCollectibles()
 	{
-		return keys;
+		return collectibles;
 	}
-	
-	// Return the chips list
-	public ArrayList<Collectible> getChips()
-	{
-		return chips;
-	}
+
 }
